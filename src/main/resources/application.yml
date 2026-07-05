@@ -1,10 +1,6 @@
 feign:
   circuitbreaker:
     enabled: true
-### Esto está relacionado con @EnableFeignClients de la Clase "ChangeNimApiApplication.java"
-### Feign = herramienta para llamar a otras APIs
-### circuitbreaker = protección si una llamada externa falla o tarda demasiado (en este Archivo
-### se habilita esa protección)
 info:
   app:
     contact:
@@ -13,61 +9,35 @@ info:
     description: Api de Cambio de Uso Domestico - Dev
     name: change-domestic-use-api
     version: 1.0.0
-### Este bloque contiene información descriptiva de la API.
-###Sirve para documentación y endpoints de información, que como vimos, parte se usa en Swagger/OpenAPI
 management:
   endpoints:
     web:
       base-path: /manage
       exposure:
         include: health,info,hystrix.stream
-### Sirve para configurar endpoints internos de monitoreo
-###la parte de "base-path: /manage" me indica que los endpoints de administración comienzan con /manage
-###y se exponen: health,info,histrix.stream... por ej: /manage/health (que indica si la App está levantada correctamente)
 server:
   port: 8080
   max-http-request-header-size: 32KB
-### Esto configura el servidor web interno de Spring Boot.
-### por ej: el puerto será 8080 (http://localhost:8080)
-### y "max-http-request-header-size: 32KB" define el tamaño máximo de info de cada request.
 spring:
   threads:
     virtual:
       enabled: true
-      ###La aplicación permite usar hilos virtuales para manejar tareas de forma más liviana
   application:
     name: change-nim-api
-    ### Define el nombre interno de la aplicación y coincide con info.app.name
   transaction:
     default-timeout: 30s
-    ### Define el tiempo máximo por defecto para una transacción.
-    ### Una transacción es una operación controlada hacia la Base de Datos. Por ej:
-    ### Guardar cambios, Generar cargos, Actualizar número, etc.
-    ### Si tarda más de 30 segundos, puede cortarse.
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
-    ### Indica que para conectarse a la Base, use el driver de Oracle
     hikari:
       auto-commit: false
-      ### las transacciones no guardan automáticamente hasta que la transacción confirme
       connection-test-query: SELECT 'Y' FROM DUAL
-      ### Spring/Hikari usa esta consulta para probar si la conexión a Oracle está viva.
       connection-timeout: 5000
-      ### Tiempo máximo para conseguir una conexión (5000 milisegundos = 5 segundos)
       max-lifetime: 7200000
-      ### Vida máxima de una conexión en el Pool (7200000 milisegundos = 2 horas)
       maximum-pool-size: 5
-      ### Máximo de conexiones disponibles en el pool (5 conexiones)
       minimum-idle: 3
-      ### Mínimo de conexiones inactivas que Kikari intenta mantener preparadas (3 conexiones)
-    ### Hikaki es el pool de conexiones
-    ### En vez de abrir una conexión nueva a Oracle cada vez, la aplicación mantiene
-    ### algunas conexiones preparadas para reutilizarlas.
     password: stl
     url: jdbc:oracle:thin:@bengolea.claro.amx:1521:ardprod
-    ### Esta es la dirección de la Base Oracle.
     username: stl
-    ### Este bloque es SUPER IMPORTANTE porque configura la conexión a la Base de Datos!!!
 
 
   ###password: Cusfijo2020
@@ -76,27 +46,17 @@ spring:
 
   jackson:
     time-zone: America/Argentina/Buenos_Aires
-  ### Jackson es lo que Spring usa para convertir objetos Java a JSON y JSON a objetos Java.
-  ### Esto: "America/Argentina/Buenos_Aires" configura la zona horaria. Por ej: si un endpoint
-  ### recibe y devuelve fechas, esta configuración ayuda a interpretarlas en zona horaria argentina.
 logging:
   level:
     org.hibernate: WARN
-### Esto define el nivel de logs. Hibernate es usado para interactuar con la base de datos
-### mediante JPA.
-### "WARN" significa: mostrame advertencias o errores, pero no logs demasiado detallados.
 springdoc:
   api-docs:
     resolve-schema-properties: true
   packagesToScan: com.claro.amx.cufjava
   swagger-ui:
     path: /openapi/swagger-ui.html
-### Esto completa la configuración de la documentación de Swagger/OpenApi
-### que vimos en "@OpenApiDefinition(...)" de la Clase "ChangeNimApiApplication.java".
 user-schema: stl
 
 swagger-servers:
   http: 'http://localhost:8080/'
   https: 'https://localhost:8080/'
-### Esto define URLs para documentación de Swagger.
-### Swagger puede mostrar que la API existe en esas direcciones.
