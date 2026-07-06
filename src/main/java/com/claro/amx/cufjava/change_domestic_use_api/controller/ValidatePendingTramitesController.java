@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Validate Pending Tramites", description = "Validación de trámites pendientes en línea FIJA")
-@RequestMapping("/v1/tramites")
+@RequestMapping("/tramites")
 public interface ValidatePendingTramitesController {
 
     @Operation(

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Fixed Lines", description = "Consulta de líneas fijas en domicilio")
-@RequestMapping("/v1/fixed-lines")
+@RequestMapping("/fixed-lines")
 public interface GetFixedLinesController {
 
     @Operation(

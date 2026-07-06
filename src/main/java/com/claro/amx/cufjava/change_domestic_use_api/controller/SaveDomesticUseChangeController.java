@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Save Domestic Use Change", description = "Guardado del cambio de uso doméstico (BOTON GRABAR)")
-@RequestMapping("/v1/domestic-use")
+@RequestMapping("/domestic-use")
 public interface SaveDomesticUseChangeController {
 
     @Operation(

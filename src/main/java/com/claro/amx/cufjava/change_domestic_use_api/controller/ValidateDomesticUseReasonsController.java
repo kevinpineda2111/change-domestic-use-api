@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Tag(name = "Validate Domestic Use Reasons", description = "Validación de razones de cambio de uso doméstico por tipo de negocio")
-@RequestMapping("/v1/domestic-use")
+@RequestMapping("/domestic-use")
 public interface ValidateDomesticUseReasonsController {
 
     @Operation(
