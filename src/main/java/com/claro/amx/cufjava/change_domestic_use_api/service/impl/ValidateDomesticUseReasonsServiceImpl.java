@@ -8,13 +8,11 @@ import com.claro.amx.cufjava.change_domestic_use_api.service.ValidateDomesticUse
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
 import com.claro.amx.cufjava.change_domestic_use_api.util.Utils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ValidateDomesticUseReasonsServiceImpl implements ValidateDomesticUseReasonsService {
 
     private final ParameterRepository parameterRepository;
@@ -27,12 +25,8 @@ public class ValidateDomesticUseReasonsServiceImpl implements ValidateDomesticUs
         var businessType = request.getBusinessType() != null ? request.getBusinessType().toUpperCase() : "";
         var reasonId = request.getReasonId() != null ? request.getReasonId().toUpperCase() : "";
 
-        log.info("[ValidateDomesticUseReasonsService] Validating reasonId={} for businessType={}", reasonId, businessType);
-
         // Only validate for FIJA business types (IF, TF, IPTV)
         if (!Utils.isFijaBusinessType(businessType)) {
-            log.debug("[ValidateDomesticUseReasonsService] BusinessType {} is not FIJA type - skipping PNTLF check",
-                    businessType);
             return ValidateDomesticUseReasonsResponseDTO.builder()
                     .allowed(true)
                     .reasonId(reasonId)
@@ -52,14 +46,11 @@ public class ValidateDomesticUseReasonsServiceImpl implements ValidateDomesticUs
         }
 
         var pntlfValue = pntlfResult.getCharValue();
-        log.debug("[ValidateDomesticUseReasonsService] PNTLF value={}", pntlfValue);
 
         if (pntlfValue != null && !pntlfValue.isBlank()) {
             // PNTLF format: #PEDBAJ#PBCOR# - check if reason is in the forbidden list
             var forbiddenReasons = pntlfValue.toUpperCase();
             if (forbiddenReasons.contains("#" + reasonId + "#")) {
-                log.warn("[ValidateDomesticUseReasonsService] ReasonId {} is forbidden by PNTLF={} for businessType={}",
-                        reasonId, pntlfValue, businessType);
                 throw new BusinessException(
                         Constants.CODE_BAD_REQUEST,
                         "La razón " + reasonId + " no está permitida para líneas " + businessType +
@@ -78,7 +69,6 @@ public class ValidateDomesticUseReasonsServiceImpl implements ValidateDomesticUs
             }
         }
 
-        log.info("[ValidateDomesticUseReasonsService] ReasonId={} is allowed for businessType={}", reasonId, businessType);
         return ValidateDomesticUseReasonsResponseDTO.builder()
                 .allowed(true)
                 .reasonId(reasonId)

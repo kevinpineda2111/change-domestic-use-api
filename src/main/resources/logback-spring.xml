@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<!-- PROPERTIES -->
+	<springProperty name="appHost" source="appender.host"/>
+	<springProperty name="appPort" source="appender.port"/>
+	<springProperty name="appCredentials" source="appender.credentials"/>
+	<springProperty name="appApplprefix" source="appender.applprefix"/>
+	<springProperty name="appAppl" source="appender.appl"/>
+	<springProperty name="appIndexPattern" source="appender.indexcreationfrequencypattern" defaultValue="yyyy.ww"/>
+	<springProperty scope="context" name="appName" source="info.app.name"/>
+
+	<!-- Consola -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%d{dd-MM-yyyy HH:mm:ss:SSS}] [%-5p] [${appName}] [%replace(%t){'tomcat-handler-','handler-'}]  %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Appender ->   Cambiar en appender la clase que tiene la conexion y envio a elastic, incluir ruta completa de la clase  -->
+	<appender name="ELASTIC_HTTP" class="com.claro.amx.cufjava.change_domestic_use_api.logger.ElasticHttpAppender">
+		<host>${appHost}</host>
+		<port>${appPort}</port>
+		<credentials>${appCredentials}</credentials>
+		<applprefix>${appApplprefix}</applprefix>
+		<appl>${appAppl}</appl>
+		<indexPattern>${appIndexPattern}</indexPattern>
+	</appender>
+
+	<!-- Async -->
+	<appender name="ASYNC_ELASTIC" class="ch.qos.logback.classic.AsyncAppender">
+		<appender-ref ref="ELASTIC_HTTP"/>
+	</appender>
+
+	<!-- Aspect  cambiar a la ruta donde se enceuntre la clase-->
+	<logger name="com.claro.amx.cufjava.change_domestic_use_api.logger.LoggerAspect" level="INFO">
+		<appender-ref ref="ASYNC_ELASTIC"/>
+	</logger>
+	<root level="INFO">
+		<appender-ref ref="STDOUT"/>
+	</root>
+
+</configuration>

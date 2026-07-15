@@ -6,7 +6,6 @@ import com.claro.amx.cufjava.change_domestic_use_api.repository.ParameterReposit
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
 import com.claro.amx.cufjava.change_domestic_use_api.util.RepositoryAccess;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlOutParameter;
@@ -19,7 +18,6 @@ import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class ParameterRepositoryImpl implements ParameterRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -30,9 +28,6 @@ public class ParameterRepositoryImpl implements ParameterRepository {
 
     @Override
     public ParameterCharValue getCharParameter(String parameterName) throws BusinessException {
-        log.debug("[ParameterRepository] Calling {}.{} with parameter={}",
-                Constants.SP_PACKAGE_PA_TIF_PARAMETERS, Constants.SP_F_GET_CHAR, parameterName);
-
         return repositoryAccess.execute(
                 () -> executeGetCharParameter(parameterName),
                 parameterName,
@@ -61,9 +56,6 @@ public class ParameterRepositoryImpl implements ParameterRepository {
         int resultCode = returnValue != null ? ((Number) returnValue).intValue() : -1;
         var charValue = (String) result.get(Constants.SP_PARAM_POUT_CHAR_VALUE);
         var errMsg = (String) result.get(Constants.SP_PARAM_POUT_ERR_MSG);
-
-        log.debug("[ParameterRepository] Result: result={}, charValue={}, errMsg={}",
-                resultCode, charValue, errMsg);
 
         return ParameterCharValue.builder()
                 .result(resultCode)

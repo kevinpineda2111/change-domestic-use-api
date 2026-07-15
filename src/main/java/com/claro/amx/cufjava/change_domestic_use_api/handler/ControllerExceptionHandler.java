@@ -4,7 +4,6 @@ import com.claro.amx.cufjava.change_domestic_use_api.dto.common.ChangeDomesticUs
 import com.claro.amx.cufjava.change_domestic_use_api.dto.common.ErrorDTO;
 import com.claro.amx.cufjava.change_domestic_use_api.exception.BusinessException;
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -17,16 +16,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-@Slf4j
 public class ControllerExceptionHandler {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ChangeDomesticUseResponseDTO<Void>> handleBusinessException(BusinessException ex) {
-        log.warn("BusinessException caught: code={}, message={}, source={}",
-                ex.getCode(), ex.getMessage(), ex.getSource());
-
         var error = ErrorDTO.builder()
                 .code(ex.getCode())
                 .message(ex.getMessage())
@@ -57,8 +52,6 @@ public class ControllerExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
 
-        log.warn("Validation error: {}", errorMessages);
-
         var error = ErrorDTO.builder()
                 .code(Constants.CODE_BAD_REQUEST)
                 .message("Validation failed: " + errorMessages)
@@ -78,8 +71,6 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ChangeDomesticUseResponseDTO<Void>> handleGenericException(Exception ex) {
-        log.error("Unexpected exception caught: {}", ex.getMessage(), ex);
-
         var error = ErrorDTO.builder()
                 .code(Constants.CODE_SERVER_ERROR)
                 .message(Constants.MSG_SERVER_ERROR + ": " + ex.getMessage())

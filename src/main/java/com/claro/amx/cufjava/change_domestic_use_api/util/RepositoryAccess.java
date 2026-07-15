@@ -1,13 +1,11 @@
 package com.claro.amx.cufjava.change_domestic_use_api.util;
 
 import com.claro.amx.cufjava.change_domestic_use_api.exception.BusinessException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Supplier;
 
 @Component
-@Slf4j
 public class RepositoryAccess {
 
     /**
@@ -30,7 +28,6 @@ public class RepositoryAccess {
         } catch (Exception e) {
             var paramPart = (parameter != null && !parameter.isBlank()) ? " - " + parameter : "";
             var fullMessage = errorMessage + paramPart + " - " + e.getMessage();
-            log.error("[{}] Repository error: {}", module, fullMessage, e);
             throw new BusinessException(Constants.CODE_SERVER_ERROR, fullMessage, module);
         }
     }

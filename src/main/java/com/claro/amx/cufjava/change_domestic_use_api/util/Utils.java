@@ -3,6 +3,7 @@ package com.claro.amx.cufjava.change_domestic_use_api.util;
 import com.claro.amx.cufjava.change_domestic_use_api.dto.common.ChangeDomesticUseResponseDTO;
 import com.claro.amx.cufjava.change_domestic_use_api.dto.common.ErrorDTO;
 import com.claro.amx.cufjava.change_domestic_use_api.exception.BusinessException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 public final class Utils {
 
     private Utils() {}
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 

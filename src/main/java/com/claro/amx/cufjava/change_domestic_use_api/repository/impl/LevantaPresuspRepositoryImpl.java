@@ -6,7 +6,6 @@ import com.claro.amx.cufjava.change_domestic_use_api.repository.LevantaPresuspRe
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
 import com.claro.amx.cufjava.change_domestic_use_api.util.RepositoryAccess;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlOutParameter;
@@ -20,7 +19,6 @@ import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class LevantaPresuspRepositoryImpl implements LevantaPresuspRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -32,9 +30,6 @@ public class LevantaPresuspRepositoryImpl implements LevantaPresuspRepository {
     @Override
     public StoredProcResult callLevantaPresusp(String lineNumber, String actId, String reasonId,
                                                Long ticklerId, String description) throws BusinessException {
-        log.debug("[LevantaPresuspRepository] Calling {} for lineNumber={}, actId={}, reasonId={}, ticklerId={}",
-                Constants.SP_LEVANTA_PRESUSP, lineNumber, actId, reasonId, ticklerId);
-
         return repositoryAccess.execute(
                 () -> executeLevantaPresusp(lineNumber, actId, reasonId, ticklerId, description),
                 lineNumber,
@@ -69,8 +64,6 @@ public class LevantaPresuspRepositoryImpl implements LevantaPresuspRepository {
 
         var returnValue = result.get(Constants.SP_RESULT_KEY);
         int resultCode = returnValue != null ? ((Number) returnValue).intValue() : -1;
-
-        log.debug("[LevantaPresuspRepository] Result: result={}", resultCode);
 
         return StoredProcResult.builder()
                 .result(resultCode)

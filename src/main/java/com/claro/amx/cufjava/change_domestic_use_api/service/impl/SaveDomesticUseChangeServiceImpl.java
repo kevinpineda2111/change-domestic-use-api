@@ -1,29 +1,25 @@
 package com.claro.amx.cufjava.change_domestic_use_api.service.impl;
 
+import com.claro.amx.cufjava.change_domestic_use_api.client.CommonRestClient;
 import com.claro.amx.cufjava.change_domestic_use_api.dto.request.SaveDomesticUseChangeRequestDTO;
 import com.claro.amx.cufjava.change_domestic_use_api.dto.response.SaveDomesticUseChangeResponseDTO;
 import com.claro.amx.cufjava.change_domestic_use_api.exception.BusinessException;
-import com.claro.amx.cufjava.change_domestic_use_api.repository.FixedLineInAddressRepository;
 import com.claro.amx.cufjava.change_domestic_use_api.repository.LevantaPresuspRepository;
 import com.claro.amx.cufjava.change_domestic_use_api.repository.PresuspeRepository;
-import com.claro.amx.cufjava.change_domestic_use_api.repository.ValidateTramiteRepository;
 import com.claro.amx.cufjava.change_domestic_use_api.service.SaveDomesticUseChangeService;
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+
 public class SaveDomesticUseChangeServiceImpl implements SaveDomesticUseChangeService {
 
-    private final FixedLineInAddressRepository fixedLineInAddressRepository;
-    private final ValidateTramiteRepository validateTramiteRepository;
+    private final CommonRestClient commonRestClient;
     private final PresuspeRepository presuspeRepository;
     private final LevantaPresuspRepository levantaPresuspRepository;
 
@@ -40,63 +36,36 @@ public class SaveDomesticUseChangeServiceImpl implements SaveDomesticUseChangeSe
         var reasonId = request.getReasonId();
         var userId = request.getUserId();
 
-        log.info("[SaveDomesticUseChangeService] Starting domestic use change: " +
-                        "lineNumber={}, accountId={}, previousUse={}, newUse={}",
-                lineNumber, accountId, previousDomesticUse, newDomesticUse);
+
 
         // Step 1: Validate DDI <-> DDN is NOT allowed directly
         validateDdiDdnChange(previousDomesticUse, newDomesticUse);
 
         // Step 2: Get all FIJA lines in the same address
-        log.debug("[SaveDomesticUseChangeService] Getting FIJA lines in address for accountId={}, lineNumber={}",
-                accountId, lineNumber);
-        var entities = fixedLineInAddressRepository.getFixedLinesInAddress(accountId, lineNumber);
 
-        if (entities == null || entities.isEmpty()) {
+        var lineInfoResponse = commonRestClient.getLineInfo(null,lineNumber);//agregar el httpheader en el metodo
+        if (lineInfoResponse.getBody().getCommonResponseDTO().getStatus().equals(Constants.RESULT_NOT_OK)) {
             throw new BusinessException(
-                    Constants.CODE_NOT_FOUND,
-                    "No se encontraron líneas FIJA activas en el domicilio de la línea " + lineNumber,
+                    Constants.CODE_SERVER_ERROR,
+                    "Error al obtener líneas FIJA en el domicilio de la línea " + lineNumber +
+                            ": " + lineInfoResponse.getBody().getCommonResponseDTO().getError().getMessage(),
                     Constants.MODULE_SAVE_DOMESTIC_USE
             );
         }
 
-        log.info("[SaveDomesticUseChangeService] Found {} lines to process", entities.size());
+
 
         var processedLines = new ArrayList<String>();
 
-        // Step 3: For each line, validate no pending tramites
-        for (var entity : entities) {
-            var currentLine = entity.getLineNumber();
-            log.debug("[SaveDomesticUseChangeService] Validating tramites for line={}", currentLine);
 
-            var tramiteResult = validateTramiteRepository.validateTramite(currentLine);
-
-            if (!tramiteResult.isSuccess()) {
-                throw new BusinessException(
-                        Constants.CODE_SERVER_ERROR,
-                        "Error en F_VALIDA_TRAMITE para línea " + currentLine +
-                                ": " + tramiteResult.getErrorMessage(),
-                        Constants.MODULE_SAVE_DOMESTIC_USE
-                );
-            }
-
-            if (tramiteResult.hasPendingTramite()) {
-                throw new BusinessException(
-                        Constants.CODE_BAD_REQUEST,
-                        "La línea " + currentLine + " tiene trámites pendientes. " +
-                                "No se puede realizar el cambio de uso doméstico.",
-                        Constants.MODULE_SAVE_DOMESTIC_USE
-                );
-            }
-        }
 
         // Step 4a: If newDomesticUse = "5" (SOLO ENTRANTE) -> call PRESUSPE for each line
         if (Constants.DOMESTIC_USE_SOLO_ENTRANTE.equals(newDomesticUse)) {
-            log.info("[SaveDomesticUseChangeService] New use is SOLO ENTRANTE (5) - calling PRESUSPE for all lines");
 
-            for (var entity : entities) {
+
+            for (var entity : lineInfoResponse.getBody().getLinesInAddress()) {
                 var currentLine = entity.getLineNumber();
-                log.debug("[SaveDomesticUseChangeService] Calling PRESUSPE for line={}", currentLine);
+
 
                 var presuspeResult = presuspeRepository.callPresuspe(
                         currentLine, ticklerId, reasonId, userId);
@@ -113,7 +82,7 @@ public class SaveDomesticUseChangeServiceImpl implements SaveDomesticUseChangeSe
                 }
 
                 processedLines.add(currentLine);
-                log.debug("[SaveDomesticUseChangeService] PRESUSPE OK for line={}", currentLine);
+
             }
         }
         // Step 4b: If previousDomesticUse = "5" and new is "1" (DDI) or "2" (DDN) -> LEVANTA_PRESUSP
@@ -121,12 +90,11 @@ public class SaveDomesticUseChangeServiceImpl implements SaveDomesticUseChangeSe
                 && (Constants.DOMESTIC_USE_DDI.equals(newDomesticUse)
                 || Constants.DOMESTIC_USE_DDN.equals(newDomesticUse))) {
 
-            log.info("[SaveDomesticUseChangeService] " +
-                    "Previous use was SOLO ENTRANTE (5) and new is DDI/DDN - calling LEVANTA_PRESUSP for all lines");
 
-            for (var entity : entities) {
+
+            for (var entity : lineInfoResponse.getBody().getLinesInAddress()) {
                 var currentLine = entity.getLineNumber();
-                log.debug("[SaveDomesticUseChangeService] Calling LEVANTA_PRESUSP for line={}", currentLine);
+
 
                 var levantaResult = levantaPresuspRepository.callLevantaPresusp(
                         currentLine,
@@ -148,15 +116,13 @@ public class SaveDomesticUseChangeServiceImpl implements SaveDomesticUseChangeSe
                 }
 
                 processedLines.add(currentLine);
-                log.debug("[SaveDomesticUseChangeService] LEVANTA_PRESUSP OK for line={}", currentLine);
+
             }
         } else {
-            log.info("[SaveDomesticUseChangeService] No stored procedure needed for previousUse={}, newUse={}",
-                    previousDomesticUse, newDomesticUse);
+
         }
 
-        log.info("[SaveDomesticUseChangeService] Domestic use change completed successfully for {} lines",
-                processedLines.size());
+
 
         return SaveDomesticUseChangeResponseDTO.builder()
                 .success(true)

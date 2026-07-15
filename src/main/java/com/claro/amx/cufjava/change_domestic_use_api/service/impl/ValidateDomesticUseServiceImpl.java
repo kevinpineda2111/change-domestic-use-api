@@ -7,13 +7,11 @@ import com.claro.amx.cufjava.change_domestic_use_api.repository.ParameterReposit
 import com.claro.amx.cufjava.change_domestic_use_api.service.ValidateDomesticUseService;
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ValidateDomesticUseServiceImpl implements ValidateDomesticUseService {
 
     private final ParameterRepository parameterRepository;
@@ -26,8 +24,6 @@ public class ValidateDomesticUseServiceImpl implements ValidateDomesticUseServic
         var country = request.getCountry() != null ? request.getCountry().toUpperCase() : "";
         var businessType = request.getBusinessType() != null ? request.getBusinessType().toUpperCase() : "";
 
-        log.info("[ValidateDomesticUseService] Validating for country={}, businessType={}", country, businessType);
-
         // 1. Check IPTV23: countries where domestic use change is NOT allowed
         var iptv23Result = parameterRepository.getCharParameter(Constants.PARAM_IPTV23);
         if (!iptv23Result.isSuccess()) {
@@ -39,14 +35,12 @@ public class ValidateDomesticUseServiceImpl implements ValidateDomesticUseServic
         }
 
         var iptv23Value = iptv23Result.getCharValue();
-        log.debug("[ValidateDomesticUseService] IPTV23 value={}", iptv23Value);
 
         if (iptv23Value != null && !iptv23Value.isBlank()) {
             // IPTV23 contains countries separated by commas or included in a delimited string
             var forbiddenCountries = iptv23Value.replace("#", ",");
             for (var forbiddenCountry : forbiddenCountries.split(",")) {
                 if (!forbiddenCountry.isBlank() && forbiddenCountry.trim().equalsIgnoreCase(country)) {
-                    log.warn("[ValidateDomesticUseService] Country {} is forbidden by IPTV23", country);
                     return ValidateDomesticUseResponseDTO.builder()
                             .allowed(false)
                             .reason("El país " + country +
@@ -67,13 +61,11 @@ public class ValidateDomesticUseServiceImpl implements ValidateDomesticUseServic
         }
 
         var iptv24Value = iptv24Result.getCharValue();
-        log.debug("[ValidateDomesticUseService] IPTV24 value={}", iptv24Value);
 
         if (iptv24Value != null && !iptv24Value.isBlank()) {
             // IPTV24 format: #IPTV#IF#TF# - check if business type is included
             var allowedTypes = iptv24Value.toUpperCase();
             if (!allowedTypes.contains("#" + businessType + "#")) {
-                log.warn("[ValidateDomesticUseService] BusinessType {} is not in IPTV24={}", businessType, iptv24Value);
                 return ValidateDomesticUseResponseDTO.builder()
                         .allowed(false)
                         .reason("El tipo de negocio " + businessType +
@@ -93,7 +85,6 @@ public class ValidateDomesticUseServiceImpl implements ValidateDomesticUseServic
             }
         }
 
-        log.info("[ValidateDomesticUseService] Validation passed for country={}, businessType={}", country, businessType);
         return ValidateDomesticUseResponseDTO.builder()
                 .allowed(true)
                 .reason("El cambio de uso doméstico es permitido")

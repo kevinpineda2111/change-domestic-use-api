@@ -104,4 +104,7 @@ public final class Constants {
     public static final String MODULE_VALIDA_TRAMITE_REPO = "ValidateTramiteRepository";
     public static final String MODULE_PRESUSPE_REPO = "PresuspeRepository";
     public static final String MODULE_LEVANTA_PRESUSP_REPO = "LevantaPresuspRepository";
+
+    public static final String RESULT_NOT_OK = "FAILED";
+    public static final String RESULT_SUCCESS = "SUCCESS";
 }

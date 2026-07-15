@@ -23,7 +23,7 @@ spring:
     virtual:
       enabled: true
   application:
-    name: change-nim-api
+    name: change-domestic-use-api
   transaction:
     default-timeout: 30s
   datasource:
@@ -46,6 +46,18 @@ spring:
 
   jackson:
     time-zone: America/Argentina/Buenos_Aires
+#commons logger
+country-code: AR
+appender:
+  host: desa-elastic.claro.com.ar
+  port: 9200
+  credentials: ${ELASTICSEARCH_CREDENTIALS:CUF_WS:CusFijo2021}
+  applprefix: es02-cufjava
+  appl: change-domestic-use-api
+  pipeline:
+  ismessage: false
+  messagefield: null
+  indexcreationfrequencypattern: yyyy.ww
 logging:
   level:
     org.hibernate: WARN
@@ -60,3 +72,8 @@ user-schema: stl
 swagger-servers:
   http: 'http://localhost:8080/'
   https: 'https://localhost:8080/'
+
+api:
+  common-cuf:
+    url: http://localhost:8081
+    #url: http://common-cuf-api-customer-fijo-ar-desa.apps.osen02.claro.amx

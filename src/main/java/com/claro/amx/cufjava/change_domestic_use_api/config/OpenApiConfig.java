@@ -27,7 +27,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .addServersItem(new Server().url(urlHttp))
                 .addServersItem(new Server().url(urlHttps))
-                .info(new Info().title("Change Nim Api")
+                .info(new Info().title("Change Domestic Use Api")
                         .description("All resources available of Error Manager")
                         .version("v1.0.0"));
     }

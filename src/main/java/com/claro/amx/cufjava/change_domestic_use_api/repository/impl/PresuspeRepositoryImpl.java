@@ -6,7 +6,6 @@ import com.claro.amx.cufjava.change_domestic_use_api.repository.PresuspeReposito
 import com.claro.amx.cufjava.change_domestic_use_api.util.Constants;
 import com.claro.amx.cufjava.change_domestic_use_api.util.RepositoryAccess;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SqlOutParameter;
@@ -20,7 +19,6 @@ import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class PresuspeRepositoryImpl implements PresuspeRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -32,9 +30,6 @@ public class PresuspeRepositoryImpl implements PresuspeRepository {
     @Override
     public StoredProcResult callPresuspe(String lineNumber, Long ticklerId, String reason, String userConnect)
             throws BusinessException {
-        log.debug("[PresuspeRepository] Calling {} for lineNumber={}, ticklerId={}, reason={}",
-                Constants.SP_PRESUSPE, lineNumber, ticklerId, reason);
-
         return repositoryAccess.execute(
                 () -> executePresuspe(lineNumber, ticklerId, reason, userConnect),
                 lineNumber,
@@ -68,8 +63,6 @@ public class PresuspeRepositoryImpl implements PresuspeRepository {
         var returnValue = result.get(Constants.SP_RESULT_KEY);
         int resultCode = returnValue != null ? ((Number) returnValue).intValue() : -1;
         var errMsg = (String) result.get(Constants.SP_PARAM_POUT_MSG_ERR);
-
-        log.debug("[PresuspeRepository] Result: result={}, errMsg={}", resultCode, errMsg);
 
         return StoredProcResult.builder()
                 .result(resultCode)
